@@ -42,6 +42,8 @@ public class CalendarLayout extends FrameLayout {
     //数据是否已经加载
     private boolean isLoad;
 
+    private boolean isUp;
+
     //底部index
     private int mBottonIndex = 1;
 
@@ -73,48 +75,45 @@ public class CalendarLayout extends FrameLayout {
             super.dispatchDraw(canvas);
         } else {
             for(int i = 0 ; i < getChildCount(); i++) {
-                if(mBottonIndex == 0) {
-                    drawInitScreen(i, canvas);
-                } else {
-                    drawResetScreen(i, canvas);
-                }
+                if(!isUp)
+                   drawNextScreen(i, mBottonIndex == 0 ? 1 : 0, canvas);
+                else
+                    drawUpScreen(i, mBottonIndex == 0 ? 1 : 0, canvas);
             }
         }
     }
 
-    private void drawInitScreen(int index, Canvas canvas) {
+    private void drawNextScreen(int index, int judge, Canvas canvas) {
         View view = getChildAt(index);
         int height = view.getHeight();
         int width = view.getWidth();
         canvas.save();
         mCamera.save();
-        mCamera.rotateX(index == 1 ? mOutRotation : mInRotation);
+        mCamera.rotateX(index == judge ? mOutRotation : mInRotation);
         mCamera.getMatrix(mMatrix);
         mCamera.restore();
 
-        mMatrix.preTranslate(- width / 2, index == 1 ? -height : 0);
-        mMatrix.postTranslate(width / 2, index == 1 ? height : 0);
-        mMatrix.postTranslate(0,  index == 1 ? -(int) (height * mProgress) : height * (1 - mProgress));
+        mMatrix.preTranslate(- width / 2, index == judge ? -height : 0);
+        mMatrix.postTranslate(width / 2, index == judge ? height : 0);
+        mMatrix.postTranslate(0,  index == judge ? -(int) (height * mProgress) : height * (1 - mProgress));
         canvas.concat(mMatrix);
         drawChild(canvas, view, getDrawingTime());
         canvas.restore();
-        System.out.println("===============height===============" + height);
     }
 
-    private void drawResetScreen(int index, Canvas canvas) {
+    private void drawUpScreen(int index, int judge, Canvas canvas) {
         View view = getChildAt(index);
         int height = view.getHeight();
         int width = view.getWidth();
         canvas.save();
         mCamera.save();
-        mCamera.rotateX(index == 0 ? mOutRotation : mInRotation);
+        mCamera.rotateX(index == judge ? -mOutRotation : -mInRotation);
         mCamera.getMatrix(mMatrix);
         mCamera.restore();
 
-        mMatrix.preTranslate(-width / 2, index == 0 ? -height : 0);
-        mMatrix.postTranslate(width / 2, index == 0 ? height : 0);
-        System.out.println("===============height===============" + height);
-        mMatrix.postTranslate(0,  index == 0 ? -(int) (height * mProgress) : height * (1 - mProgress));
+        mMatrix.preTranslate(-width / 2, index ==judge? 0 : -height);
+        mMatrix.postTranslate(width / 2, index == judge ? 0 : height);
+        mMatrix.postTranslate(0,  index == judge ? (int) (height * mProgress) : - height * (1 - mProgress));
         canvas.concat(mMatrix);
         drawChild(canvas, view, getDrawingTime());
         canvas.restore();
@@ -155,13 +154,37 @@ public class CalendarLayout extends FrameLayout {
                     mOutRotation = (int) (mRotation * mProgress);
                     mInRotation = -(mRotation - mOutRotation);
                     invalidate();
+
+                    isUp = false;
+                } else if(moveY > mInitY){
+                    isUp = true;
+
+                    if(!isLoad) {
+                        if(mBottonIndex == 1) {
+                            mBottonIndex = 0;
+                        } else {
+                            mBottonIndex = 1;
+                        }
+                        CardView cardView = (CardView) getChildAt(mBottonIndex);
+                        RecyclerView recyclerView = (RecyclerView) cardView.getChildAt(0);
+                        mOnRotationListener.onRotationStart(true, recyclerView);
+                        isLoad = true;
+                    }
+
+                    mProgress = (moveY - mInitY) / mOffsetNum;
+                    if(mProgress < 0) mProgress = 0;
+                    if(mProgress > 1) mProgress = 1;
+                    mOutRotation = (int) (mRotation * mProgress);
+                    mInRotation = -(mRotation - mOutRotation);
+                    invalidate();
+                    isInit = false;
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 float offsetRotation = mRotation - mOutRotation;
                 if(offsetRotation <= 0) {
                     isLoad = false;
-                    mOnRotationListener.onRotationEnd(false);
+                    mOnRotationListener.onRotationEnd(isUp);
                     clearHideViewData();
                 } else {
                     rotationAnimation(offsetRotation, mOutRotation);
@@ -196,7 +219,7 @@ public class CalendarLayout extends FrameLayout {
         valueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mOnRotationListener.onRotationEnd(false);
+                mOnRotationListener.onRotationEnd(isUp);
                 isLoad = false;
                 clearHideViewData();
             }

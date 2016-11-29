@@ -17,7 +17,6 @@ import com.fe.jkcalendar.utils.DisplayUtils;
 import com.fe.jkcalendar.vo.DateVO;
 import com.fe.jkcalendar.vo.YMonthVO;
 import com.fe.jkcalendar.widget.CalendarLayout;
-import java.util.List;
 
 /**
  * Created by chenpengfei 2016/11/25.
@@ -63,24 +62,16 @@ public class MainActivity extends BaseActivity {
         mLayoutCalendar.setOnRotationListener(new CalendarLayout.OnRotationListener() {
             @Override
             public void onRotationEnd(boolean up) {
-                if(up) {
-
-                } else {
-                    mYMonth.setYearMonth(mNextYMonth.getYearMonth());
-                    mYMonth.setDateVOList(mNextYMonth.getDateVOList());
-                    setCurrentYMonth();
-                    getUpNextMonthDayList();
-                }
+                mYMonth.setYearMonth(!up ? mNextYMonth.getYearMonth() : mUpYMonth.getYearMonth());
+                mYMonth.setDateVOList(!up ? mNextYMonth.getDateVOList() : mUpYMonth.getDateVOList());
+                setCurrentYMonth();
+                getUpNextMonthDayList();
             }
 
             @Override
             public void onRotationStart(boolean up, RecyclerView recyclerView) {
-                if(up) {
-
-                } else {
-                    CalendarAdapter cAdapter = (CalendarAdapter) recyclerView.getAdapter();
-                    cAdapter.resetData(mNextYMonth.getDateVOList());
-                }
+                CalendarAdapter cAdapter = (CalendarAdapter) recyclerView.getAdapter();
+                cAdapter.resetData(up ? mUpYMonth.getDateVOList() : mNextYMonth.getDateVOList());
             }
         });
         setCurrentYMonth();
@@ -97,6 +88,7 @@ public class MainActivity extends BaseActivity {
             public void run() {
                 mNextYMonth = DateUtils.getYearNextOrUpMonthDayList(mYMonth.getYearMonth(), 1);
                 mUpYMonth = DateUtils.getYearNextOrUpMonthDayList(mYMonth.getYearMonth(), -1);
+
             }
         }).start();
     }
