@@ -3,15 +3,16 @@ package com.fe.jkcalendar.adapter.home;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.fe.jkcalendar.R;
-import com.fe.jkcalendar.adapter.BaseAdapter;
-import com.fe.jkcalendar.adapter.BaseViewHolder;
+import com.fe.jkcalendar.base.BaseAdapter;
+import com.fe.jkcalendar.base.BaseViewHolder;
 import com.fe.jkcalendar.utils.DisplayUtils;
 import com.fe.jkcalendar.vo.DateVO;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,6 +22,10 @@ import java.util.List;
 public class CalendarAdapter extends BaseAdapter<DateVO> {
 
     private int mSelectPosition;
+
+    public CalendarAdapter(Context context) {
+        this(context, new ArrayList<DateVO>());
+    }
 
     public CalendarAdapter(Context context, List<DateVO> dataList) {
         super(context, dataList);

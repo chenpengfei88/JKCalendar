@@ -1,6 +1,7 @@
 package com.fe.jkcalendar.utils;
 
 import com.fe.jkcalendar.vo.DateVO;
+import com.fe.jkcalendar.vo.YMonthVO;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,6 +40,11 @@ public class DateUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String getDateStr(Date date, String datePattern) {
+        sdf = new SimpleDateFormat(datePattern);
+        return sdf.format(date);
     }
 
     public static int getCurrentYearOrMonthOrDay(int type) {
@@ -96,10 +102,13 @@ public class DateUtils {
      * @param isInit 是否初始化
      * @return
      */
-    public static List<DateVO> getYearMonthDayList(String yearMonthStr, int currentDay, boolean isInit) {
+    public static YMonthVO getYearMonthDayList(String yearMonthStr, int currentDay, boolean isInit) {
+        YMonthVO yMonthVO = new YMonthVO();
+        yMonthVO.setYearMonth(yearMonthStr);
+
         List<DateVO> dateVoList = new ArrayList<>();
         Date yearMonthDate = getDate(yearMonthStr, DATE_PATTERN_FOUR);
-        if(yearMonthDate == null) return dateVoList;
+        if(yearMonthDate == null) return yMonthVO;
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(yearMonthDate);
@@ -137,31 +146,35 @@ public class DateUtils {
                 dateVoList.add(new DateVO());
             }
         }
-        return dateVoList;
+        yMonthVO.setDateVOList(dateVoList);
+        return yMonthVO;
     }
 
     /**
      *  得到当前日期的天数
      * @return
      */
-    public static List<DateVO> getCurrentDateDayList() {
+    public static YMonthVO getCurrentDateDayList() {
         return getYearMonthDayList(getCurrentDateStr(DATE_PATTERN_FOUR), getCurrentYearOrMonthOrDay(DAY), true);
     }
 
     /**
-     * 得到当前的日期
+     *  得到当前月的下addmonth个月
+     * @param addMonth
+     * @return
      */
-    public static DateVO getCurrentDateVo(List<DateVO> dateVOList) {
-        int day = DateUtils.getCurrentYearOrMonthOrDay(DateUtils.DAY);
-        DateVO currentDateVo = null;
-        for(DateVO dateVO : dateVOList) {
-            if(dateVO.getDate() == day) {
-                currentDateVo = dateVO;
-                break;
-            }
-        }
-        return currentDateVo;
+    public static String getNextMonth(String currentMonth, int addMonth) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(getDate(currentMonth, DATE_PATTERN_FOUR));
+        calendar.add(Calendar.MONTH, addMonth);
+        return getDateStr(calendar.getTime(), DATE_PATTERN_FOUR);
     }
+
+    public static YMonthVO getYearNextOrUpMonthDayList(String currentMonth, int addMonth) {
+        return getYearMonthDayList(getNextMonth(currentMonth, addMonth), 0, false);
+    }
+
+
 
 
 

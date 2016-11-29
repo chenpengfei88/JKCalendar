@@ -1,4 +1,4 @@
-package com.fe.jkcalendar.adapter;
+package com.fe.jkcalendar.base;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;

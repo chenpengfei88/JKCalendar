@@ -2,23 +2,21 @@ package com.fe.jkcalendar.activity.home;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.fe.jkcalendar.R;
-import com.fe.jkcalendar.activity.BaseActivity;
-import com.fe.jkcalendar.adapter.BaseAdapter;
 import com.fe.jkcalendar.adapter.home.CalendarAdapter;
+import com.fe.jkcalendar.base.BaseActivity;
 import com.fe.jkcalendar.utils.Const;
 import com.fe.jkcalendar.utils.DateUtils;
 import com.fe.jkcalendar.utils.DisplayUtils;
 import com.fe.jkcalendar.vo.DateVO;
-import com.fe.jkcalendar.widget.GridDividerItemDecoration;
+import com.fe.jkcalendar.vo.YMonthVO;
+import com.fe.jkcalendar.widget.CalendarLayout;
 import java.util.List;
 
 /**
@@ -28,9 +26,9 @@ import java.util.List;
 public class MainActivity extends BaseActivity {
 
     /**
-     * 日历
+     * 日历布局
      */
-    private RecyclerView mRvCalendar;
+    private CalendarLayout mLayoutCalendar;
 
     /**
      *  周
@@ -38,40 +36,75 @@ public class MainActivity extends BaseActivity {
     private LinearLayout mLlWeek;
 
     /**
-     *  日历适配器
+     * 当前年月
      */
-    private CalendarAdapter mAdapterCalendar;
+    private YMonthVO mYMonth, mNextYMonth, mUpYMonth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initView();
+        initViewData();
     }
 
-    private void initView() {
+    private void initViewData() {
+        //周视图
         mLlWeek = (LinearLayout) findViewById(R.id.ll_week);
         addWeekViews();
 
-        mRvCalendar = (RecyclerView) findViewById(R.id.rv_calendar);
-        mRvCalendar.setLayoutManager(new GridLayoutManager(this, Const.SPAN_COUNT));
-        mRvCalendar.addItemDecoration(new GridDividerItemDecoration());
-        List<DateVO> dateVOList = DateUtils.getCurrentDateDayList();
-        mAdapterCalendar = new CalendarAdapter(this, dateVOList);
-        mRvCalendar.setAdapter(mAdapterCalendar);
-        mAdapterCalendar.setOnItemClickListener(new BaseAdapter.OnItemClickListener() {
+        //日历layout
+        mLayoutCalendar = (CalendarLayout) findViewById(R.id.layout_calendar);
+        //当前月份，下个月，下下个月的天数
+        mYMonth = DateUtils.getCurrentDateDayList();
+
+        mLayoutCalendar.addRvView(this, View.inflate(this, R.layout.activity_gridview, null) , new CalendarAdapter(this));
+        mLayoutCalendar.addRvView(this, View.inflate(this, R.layout.activity_gridview, null), new CalendarAdapter(this, mYMonth.getDateVOList()));
+
+        getUpNextMonthDayList();
+        mLayoutCalendar.setOnRotationListener(new CalendarLayout.OnRotationListener() {
             @Override
-            public void onItemClick(View view, int position) {
-                int selectPosition = mAdapterCalendar.updateSelectPositionVO();
-                DateVO dateVO = mAdapterCalendar.getItemData(position);
-                dateVO.setSelect(true);
-                mAdapterCalendar.notifyItemsChanged(selectPosition, position);
+            public void onRotationEnd(boolean up) {
+                if(up) {
+
+                } else {
+                    mYMonth.setYearMonth(mNextYMonth.getYearMonth());
+                    mYMonth.setDateVOList(mNextYMonth.getDateVOList());
+                    setCurrentYMonth();
+                    getUpNextMonthDayList();
+                }
+            }
+
+            @Override
+            public void onRotationStart(boolean up, RecyclerView recyclerView) {
+                if(up) {
+
+                } else {
+                    CalendarAdapter cAdapter = (CalendarAdapter) recyclerView.getAdapter();
+                    cAdapter.resetData(mNextYMonth.getDateVOList());
+                }
             }
         });
-
-        DateVO currentDateVo = DateUtils.getCurrentDateVo(dateVOList);
-        mBarHelper.setTitle(currentDateVo.toString());
+        setCurrentYMonth();
     }
 
+    private void setCurrentYMonth() {
+        //当前日期
+        mBarHelper.setTitle(mYMonth.toString());
+    }
+
+    private void getUpNextMonthDayList() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mNextYMonth = DateUtils.getYearNextOrUpMonthDayList(mYMonth.getYearMonth(), 1);
+                mUpYMonth = DateUtils.getYearNextOrUpMonthDayList(mYMonth.getYearMonth(), -1);
+            }
+        }).start();
+    }
+
+
+    /**
+     *  添加周视图
+     */
     private void addWeekViews() {
         String[] weekArray = getStringContentArray(R.array.week_array);
         int length = weekArray.length;

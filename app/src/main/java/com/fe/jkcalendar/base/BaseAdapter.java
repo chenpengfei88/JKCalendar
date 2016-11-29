@@ -1,9 +1,11 @@
-package com.fe.jkcalendar.adapter;
+package com.fe.jkcalendar.base;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,6 +48,15 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder
         for(int i = 0; i < positons.length; i++) {
             notifyItemChanged(positons[i]);
         }
+    }
+
+    public void resetData(List<T> dataList) {
+        if(mDataList == null) mDataList = new ArrayList<>();
+        int size = mDataList.size();
+        mDataList.clear();
+        if(dataList != null)
+        mDataList.addAll(dataList);
+        notifyItemRangeChanged(0, dataList != null ? getItemCount() : size);
     }
 
 

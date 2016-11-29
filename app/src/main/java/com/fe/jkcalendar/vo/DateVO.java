@@ -81,9 +81,5 @@ public class DateVO {
         this.week = week;
     }
 
-    @Override
-    public String toString() {
-        String[] dateArray = currentDate.split("-");
-        return dateArray[0] + "年" + dateArray[1] + "月";
-    }
+
 }

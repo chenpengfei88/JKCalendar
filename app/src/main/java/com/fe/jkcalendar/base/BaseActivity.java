@@ -1,4 +1,4 @@
-package com.fe.jkcalendar.activity;
+package com.fe.jkcalendar.base;
 
 import android.os.Bundle;
 import android.support.annotation.ArrayRes;
@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.FrameLayout;
+
 import com.fe.jkcalendar.R;
 import com.fe.jkcalendar.widget.helper.BarHelper;
 

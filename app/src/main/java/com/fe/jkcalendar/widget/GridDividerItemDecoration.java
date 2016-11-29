@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-
 import com.fe.jkcalendar.utils.Const;
 
 /**
@@ -54,6 +53,7 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
         final int count = rows * Const.SPAN_COUNT;
         for (int i = 0; i < Const.SPAN_COUNT; i++) {
             final View child = parent.getChildAt(count + i);
+            if(child == null) return;
             final int left = child.getRight();
             final int right = left + mDividerWH;
             final int bottom = child.getBottom();
