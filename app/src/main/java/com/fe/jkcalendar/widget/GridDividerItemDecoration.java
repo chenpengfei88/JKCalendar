@@ -18,7 +18,7 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
     private int mDividerColor;
 
     public GridDividerItemDecoration() {
-        this(1, Color.parseColor("#dddddd"));
+        this(1, Color.parseColor("#EDEDED"));
     }
 
     public GridDividerItemDecoration(int dividerWH, int dividerColor) {

@@ -15,7 +15,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.widget.FrameLayout;
 import com.fe.jkcalendar.R;
 import com.fe.jkcalendar.adapter.home.CalendarAdapter;
@@ -30,23 +29,32 @@ public class CalendarLayout extends FrameLayout {
 
     //是否初始化
     private boolean isInit = true;
-    private float mInitY;
-    private float mProgress;
-    private float mOutRotation, mInRotation, mRotation = 90;
-    private float mOffsetNum = 700;
-    private Camera mCamera = new Camera();
-    private Matrix mMatrix = new Matrix();
-
-    // 检测到手机的最小滑动值
-    private int mTouchSlop;
     //数据是否已经加载
     private boolean isLoad;
+    //是否是滑动上个月数据
+    private boolean isUpMonth;
 
-    private boolean isUp;
-
+    private float mInitY;
+    //滑动进度
+    private float mProgress;
+    //滑出化劲的角度
+    private float mOutRotation, mInRotation, mRotation = 90;
+    //滑动的距离
+    private float mOffsetNum = 700;
     //底部index
     private int mBottonIndex = 1;
 
+    //向上滑动
+    private static final int SLIDE_UP = 1;
+    //向下滑动
+    private static final int SLIDE_DOWN = 2;
+
+    private int mCurrentSlide;
+    //是否在执行动画
+    private boolean isAnimation;
+
+    private Camera mCamera = new Camera();
+    private Matrix mMatrix = new Matrix();
     private OnRotationListener mOnRotationListener;
 
 
@@ -56,7 +64,6 @@ public class CalendarLayout extends FrameLayout {
 
     public CalendarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
     public CalendarLayout(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -75,50 +82,30 @@ public class CalendarLayout extends FrameLayout {
             super.dispatchDraw(canvas);
         } else {
             for(int i = 0 ; i < getChildCount(); i++) {
-                if(!isUp)
-                   drawNextScreen(i, mBottonIndex == 0 ? 1 : 0, canvas);
-                else
-                    drawUpScreen(i, mBottonIndex == 0 ? 1 : 0, canvas);
+                drawScreen(i, mBottonIndex == 0 ? 1 : 0, canvas);
             }
         }
     }
 
-    private void drawNextScreen(int index, int judge, Canvas canvas) {
+    private void drawScreen(int index, int judge, Canvas canvas) {
         View view = getChildAt(index);
         int height = view.getHeight();
         int width = view.getWidth();
         canvas.save();
         mCamera.save();
-        mCamera.rotateX(index == judge ? mOutRotation : mInRotation);
+        mCamera.rotateX(index == judge ? isUpMonth ? -mOutRotation : mOutRotation : isUpMonth ? -mInRotation : mInRotation);
         mCamera.getMatrix(mMatrix);
         mCamera.restore();
 
-        mMatrix.preTranslate(- width / 2, index == judge ? -height : 0);
-        mMatrix.postTranslate(width / 2, index == judge ? height : 0);
-        mMatrix.postTranslate(0,  index == judge ? -(int) (height * mProgress) : height * (1 - mProgress));
+        mMatrix.preTranslate(- width / 2, index == judge ? isUpMonth ? 0 : -height : isUpMonth ? -height : 0);
+        mMatrix.postTranslate(width / 2, index == judge ? isUpMonth ? 0 : height : isUpMonth ? height : 0);
+        float moveOffsetOne = (height * mProgress);
+        float moveOffsetTwo = height * (1 - mProgress);
+        mMatrix.postTranslate(0,  index == judge ? isUpMonth ? moveOffsetOne : -moveOffsetOne : isUpMonth ? -moveOffsetTwo : moveOffsetTwo);
         canvas.concat(mMatrix);
         drawChild(canvas, view, getDrawingTime());
         canvas.restore();
     }
-
-    private void drawUpScreen(int index, int judge, Canvas canvas) {
-        View view = getChildAt(index);
-        int height = view.getHeight();
-        int width = view.getWidth();
-        canvas.save();
-        mCamera.save();
-        mCamera.rotateX(index == judge ? -mOutRotation : -mInRotation);
-        mCamera.getMatrix(mMatrix);
-        mCamera.restore();
-
-        mMatrix.preTranslate(-width / 2, index ==judge? 0 : -height);
-        mMatrix.postTranslate(width / 2, index == judge ? 0 : height);
-        mMatrix.postTranslate(0,  index == judge ? (int) (height * mProgress) : - height * (1 - mProgress));
-        canvas.concat(mMatrix);
-        drawChild(canvas, view, getDrawingTime());
-        canvas.restore();
-    }
-
 
 
     @Override
@@ -134,64 +121,56 @@ public class CalendarLayout extends FrameLayout {
                 break;
             case MotionEvent.ACTION_MOVE:
                 float moveY = event.getY();
-                //向下
-                if(moveY < mInitY) {
-                    if(!isLoad) {
-                        if(mBottonIndex == 1) {
-                            mBottonIndex = 0;
-                        } else {
-                            mBottonIndex = 1;
-                        }
-                        CardView cardView = (CardView) getChildAt(mBottonIndex);
-                        RecyclerView recyclerView = (RecyclerView) cardView.getChildAt(0);
-                        mOnRotationListener.onRotationStart(false, recyclerView);
-                        isLoad = true;
+                if(moveY == mInitY || isAnimation) break;
+                //向上滑动
+                if(moveY < mInitY || mCurrentSlide == SLIDE_UP) {
+                    if(mCurrentSlide != SLIDE_DOWN) {
+                        slide(moveY, true, SLIDE_UP, false);
                     }
-                    isInit = false;
-                    mProgress = (mInitY - moveY) / mOffsetNum;
-                    if(mProgress < 0) mProgress = 0;
-                    if(mProgress > 1) mProgress = 1;
-                    mOutRotation = (int) (mRotation * mProgress);
-                    mInRotation = -(mRotation - mOutRotation);
-                    invalidate();
-
-                    isUp = false;
-                } else if(moveY > mInitY){
-                    isUp = true;
-
-                    if(!isLoad) {
-                        if(mBottonIndex == 1) {
-                            mBottonIndex = 0;
-                        } else {
-                            mBottonIndex = 1;
-                        }
-                        CardView cardView = (CardView) getChildAt(mBottonIndex);
-                        RecyclerView recyclerView = (RecyclerView) cardView.getChildAt(0);
-                        mOnRotationListener.onRotationStart(true, recyclerView);
-                        isLoad = true;
+                } else if(moveY > mInitY || mCurrentSlide == SLIDE_DOWN) {
+                    if(mCurrentSlide != SLIDE_UP) {
+                        slide(moveY, false, SLIDE_DOWN, true);
                     }
-
-                    mProgress = (moveY - mInitY) / mOffsetNum;
-                    if(mProgress < 0) mProgress = 0;
-                    if(mProgress > 1) mProgress = 1;
-                    mOutRotation = (int) (mRotation * mProgress);
-                    mInRotation = -(mRotation - mOutRotation);
-                    invalidate();
-                    isInit = false;
                 }
                 break;
             case MotionEvent.ACTION_UP:
+                mCurrentSlide = 0;
                 float offsetRotation = mRotation - mOutRotation;
                 if(offsetRotation <= 0) {
                     isLoad = false;
-                    mOnRotationListener.onRotationEnd(isUp);
+                    mOnRotationListener.onRotationEnd(isUpMonth);
                     clearHideViewData();
                 } else {
+                    isAnimation = true;
                     rotationAnimation(offsetRotation, mOutRotation);
                 }
                 break;
         }
         return true;
+    }
+
+    //滑动
+    private void slide(float moveY, boolean slideUp, int slide, boolean upMonth) {
+        isUpMonth = upMonth;
+        mCurrentSlide = slide;
+        if(!isLoad) {
+            if(mBottonIndex == 1) {
+                mBottonIndex = 0;
+            } else {
+                mBottonIndex = 1;
+            }
+            CardView cardView = (CardView) getChildAt(mBottonIndex);
+            RecyclerView recyclerView = (RecyclerView) cardView.getChildAt(0);
+            mOnRotationListener.onRotationStart(false, recyclerView);
+            isLoad = true;
+        }
+        isInit = false;
+        mProgress = (slideUp ? mInitY - moveY : moveY - mInitY) / mOffsetNum;
+        if(mProgress < 0) mProgress = 0;
+        if(mProgress > 1) mProgress = 1;
+        mOutRotation = (int) (mRotation * mProgress);
+        mInRotation = -(mRotation - mOutRotation);
+        invalidate();
     }
 
     public void addRvView(Context context, View view, CalendarAdapter calendarAdapter) {
@@ -219,8 +198,9 @@ public class CalendarLayout extends FrameLayout {
         valueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mOnRotationListener.onRotationEnd(isUp);
+                mOnRotationListener.onRotationEnd(isUpMonth);
                 isLoad = false;
+                isAnimation = false;
                 clearHideViewData();
             }
         });

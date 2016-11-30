@@ -1,6 +1,5 @@
 package com.fe.jkcalendar.activity.home;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
@@ -14,7 +13,6 @@ import com.fe.jkcalendar.base.BaseActivity;
 import com.fe.jkcalendar.utils.Const;
 import com.fe.jkcalendar.utils.DateUtils;
 import com.fe.jkcalendar.utils.DisplayUtils;
-import com.fe.jkcalendar.vo.DateVO;
 import com.fe.jkcalendar.vo.YMonthVO;
 import com.fe.jkcalendar.widget.CalendarLayout;
 
@@ -43,6 +41,11 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initViewData();
+    }
+
+    @Override
+    protected int getLayoutResID() {
+        return R.layout.activity_main;
     }
 
     private void initViewData() {
@@ -117,8 +120,5 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    @Override
-    protected int getLayoutResID() {
-        return R.layout.activity_main;
-    }
+
 }

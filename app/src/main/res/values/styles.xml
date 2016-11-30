@@ -10,8 +10,10 @@
         <item name="windowActionBar">false</item>
     </style>
 
-    <style name="ToolbarTheme" parent="AppTheme">
-        <item name="android:textSize">@dimen/text_typeface_size_one</item>
+    <style name="divider_line">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/color_fdddddd</item>
     </style>
 
 </resources>
