@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_today"
+        android:title=""
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_select"
+        android:title="选择"
+        app:showAsAction="ifRoom" />
+
+    <!--
+    <item
+        android:id="@+id/action_item1"
+        android:title="1111"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_item2"
+        android:title="2222"
+        app:showAsAction="ifRoom" />-->
+</menu>

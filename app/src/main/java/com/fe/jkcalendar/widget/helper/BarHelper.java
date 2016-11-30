@@ -1,6 +1,5 @@
 package com.fe.jkcalendar.widget.helper;
 
-import android.graphics.Color;
 import android.support.v7.widget.Toolbar;
 
 /**
@@ -12,11 +11,14 @@ public class BarHelper {
 
     public BarHelper(Toolbar toolbar) {
         mToolBar = toolbar;
-        mToolBar.setTitleTextColor(Color.WHITE);
-        mToolBar.setTitle("111111");
     }
 
     public void setTitle(String title) {
         mToolBar.setTitle(title);
     }
+
+    public void setRightTitle(String rightTitle) {
+        mToolBar.getMenu().getItem(0).setTitle(rightTitle);
+    }
+
 }

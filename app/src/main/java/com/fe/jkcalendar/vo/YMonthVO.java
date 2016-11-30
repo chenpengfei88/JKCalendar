@@ -1,5 +1,7 @@
 package com.fe.jkcalendar.vo;
 
+import com.fe.jkcalendar.utils.StringUtils;
+
 import java.util.List;
 
 /**
@@ -17,12 +19,35 @@ public class YMonthVO {
      */
     private List<DateVO> dateVOList;
 
+    /**
+     * 年
+     */
+
+    private int year;
+    /**
+     *  月
+     */
+    private int month;
+
     public String getYearMonth() {
         return yearMonth;
     }
 
     public void setYearMonth(String yearMonth) {
         this.yearMonth = yearMonth;
+        if(StringUtils.isEmpty(yearMonth)) return;
+        String[] yearMonthArray = yearMonth.split("-");
+        if(yearMonthArray.length < 2) return;
+        year = Integer.valueOf(yearMonthArray[0]);
+        month = Integer.valueOf(yearMonthArray[1]);
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public int getMonth() {
+        return month;
     }
 
     public List<DateVO> getDateVOList() {

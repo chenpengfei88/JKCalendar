@@ -7,12 +7,16 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.fe.jkcalendar.R;
 import com.fe.jkcalendar.adapter.home.CalendarAdapter;
 import com.fe.jkcalendar.base.BaseActivity;
+import com.fe.jkcalendar.utils.CalendarUtils;
 import com.fe.jkcalendar.utils.Const;
 import com.fe.jkcalendar.utils.DateUtils;
 import com.fe.jkcalendar.utils.DisplayUtils;
+import com.fe.jkcalendar.utils.StringUtils;
 import com.fe.jkcalendar.vo.YMonthVO;
 import com.fe.jkcalendar.widget.CalendarLayout;
 
@@ -37,6 +41,11 @@ public class MainActivity extends BaseActivity {
      */
     private YMonthVO mYMonth, mNextYMonth, mUpYMonth;
 
+    /**
+     * 日期已选择
+     */
+    private boolean isDateSelect;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,16 +61,13 @@ public class MainActivity extends BaseActivity {
         //周视图
         mLlWeek = (LinearLayout) findViewById(R.id.ll_week);
         addWeekViews();
-
         //日历layout
         mLayoutCalendar = (CalendarLayout) findViewById(R.id.layout_calendar);
-        //当前月份，下个月，下下个月的天数
-        mYMonth = DateUtils.getCurrentDateDayList();
 
+        initMonthData(null);
         mLayoutCalendar.addRvView(this, View.inflate(this, R.layout.activity_gridview, null) , new CalendarAdapter(this));
         mLayoutCalendar.addRvView(this, View.inflate(this, R.layout.activity_gridview, null), new CalendarAdapter(this, mYMonth.getDateVOList()));
 
-        getUpNextMonthDayList();
         mLayoutCalendar.setOnRotationListener(new CalendarLayout.OnRotationListener() {
             @Override
             public void onRotationEnd(boolean up) {
@@ -77,12 +83,23 @@ public class MainActivity extends BaseActivity {
                 cAdapter.resetData(up ? mUpYMonth.getDateVOList() : mNextYMonth.getDateVOList());
             }
         });
-        setCurrentYMonth();
     }
 
     private void setCurrentYMonth() {
         //当前日期
         mBarHelper.setTitle(mYMonth.toString());
+        if(!DateUtils.yearMonthIsCurrentMonth(mYMonth.getYearMonth())) {
+            mBarHelper.setRightTitle(getStringContent(R.string.text_today));
+        } else {
+            mBarHelper.setRightTitle("");
+        }
+    }
+
+    private void initMonthData(String yearMonth) {
+        //当前月份
+        mYMonth = StringUtils.isEmpty(yearMonth) ? DateUtils.getCurrentDateDayList() : DateUtils.getYearMonthDayList(yearMonth, 0, false);
+        getUpNextMonthDayList();
+        setCurrentYMonth();
     }
 
     private void getUpNextMonthDayList() {
@@ -91,7 +108,6 @@ public class MainActivity extends BaseActivity {
             public void run() {
                 mNextYMonth = DateUtils.getYearNextOrUpMonthDayList(mYMonth.getYearMonth(), 1);
                 mUpYMonth = DateUtils.getYearNextOrUpMonthDayList(mYMonth.getYearMonth(), -1);
-
             }
         }).start();
     }
@@ -119,6 +135,23 @@ public class MainActivity extends BaseActivity {
         return tvWeek;
     }
 
+    @Override
+    protected void onRightOneClick() {
+        initMonthData(null);
+        mLayoutCalendar.resetViewData(mLayoutCalendar.mBottonIndex, mYMonth.getDateVOList());
+    }
 
-
+    @Override
+    protected void onRightTwoClick() {
+        isDateSelect = false;
+        CalendarUtils.showCalendar(this, mYMonth.getYear(), mYMonth.getMonth(), new CalendarUtils.OnSelectDateListener() {
+            @Override
+            public void onSelectDate(int year, int month, String yearMonth) {
+                if(!isDateSelect) {
+                    isDateSelect = true;
+                    initMonthData(yearMonth);
+                }
+            }
+        });
+    }
 }

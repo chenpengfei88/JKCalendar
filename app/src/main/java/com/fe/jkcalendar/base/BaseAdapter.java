@@ -56,7 +56,7 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder
         mDataList.clear();
         if(dataList != null)
         mDataList.addAll(dataList);
-        notifyItemRangeChanged(0, dataList != null ? getItemCount() : size);
+        notifyItemRangeChanged(0, dataList != null ? dataList.size() : size);
     }
 
 

@@ -19,6 +19,9 @@ import android.widget.FrameLayout;
 import com.fe.jkcalendar.R;
 import com.fe.jkcalendar.adapter.home.CalendarAdapter;
 import com.fe.jkcalendar.utils.Const;
+import com.fe.jkcalendar.vo.DateVO;
+
+import java.util.List;
 
 /**
  * Created by chenpengfei on 2016/11/27.
@@ -42,7 +45,7 @@ public class CalendarLayout extends FrameLayout {
     //滑动的距离
     private float mOffsetNum = 700;
     //底部index
-    private int mBottonIndex = 1;
+    public int mBottonIndex = 1;
 
     //向上滑动
     private static final int SLIDE_UP = 1;
@@ -139,7 +142,7 @@ public class CalendarLayout extends FrameLayout {
                 if(offsetRotation <= 0) {
                     isLoad = false;
                     mOnRotationListener.onRotationEnd(isUpMonth);
-                    clearHideViewData();
+                    resetViewData(mBottonIndex == 0 ? 1 : 0, null);
                 } else {
                     isAnimation = true;
                     rotationAnimation(offsetRotation, mOutRotation);
@@ -201,16 +204,16 @@ public class CalendarLayout extends FrameLayout {
                 mOnRotationListener.onRotationEnd(isUpMonth);
                 isLoad = false;
                 isAnimation = false;
-                clearHideViewData();
+                resetViewData(mBottonIndex == 0 ? 1 : 0, null);
             }
         });
     }
 
-    private void clearHideViewData() {
-        CardView cardView = (CardView) getChildAt(mBottonIndex == 0 ? 1 : 0);
+    public void resetViewData(int index, List<DateVO> dateVOList) {
+        CardView cardView = (CardView) getChildAt(index);
         RecyclerView recyclerView = (RecyclerView) cardView.getChildAt(0);
         CalendarAdapter calendarAdapter = (CalendarAdapter) recyclerView.getAdapter();
-        calendarAdapter.resetData(null);
+        calendarAdapter.resetData(dateVOList);
     }
 
     public void setOnRotationListener(OnRotationListener onRotationListener) {

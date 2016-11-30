@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">JKCalendar</string>
+    <string name="app_name">简酷日历</string>
+
+    <string name="text_today">今天</string>
 
     <array name="week_array">
         <item>周一</item>

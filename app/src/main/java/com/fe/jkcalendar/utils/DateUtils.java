@@ -103,6 +103,7 @@ public class DateUtils {
      * @return
      */
     public static YMonthVO getYearMonthDayList(String yearMonthStr, int currentDay, boolean isInit) {
+        System.out.println("========yearMonthStr===========" + yearMonthStr + "==========" + currentDay);
         YMonthVO yMonthVO = new YMonthVO();
         yMonthVO.setYearMonth(yearMonthStr);
 
@@ -172,6 +173,15 @@ public class DateUtils {
 
     public static YMonthVO getYearNextOrUpMonthDayList(String currentMonth, int addMonth) {
         return getYearMonthDayList(getNextMonth(currentMonth, addMonth), 0, false);
+    }
+
+    /**
+     *  月份是不是的当前月份
+     * @param yearMonth
+     * @return
+     */
+    public static boolean yearMonthIsCurrentMonth(String yearMonth) {
+        return StringUtils.isEquals(yearMonth, getCurrentDateStr(DATE_PATTERN_FOUR));
     }
 
 
