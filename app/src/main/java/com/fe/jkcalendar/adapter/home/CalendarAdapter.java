@@ -6,11 +6,15 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.fe.jkcalendar.JKApplication;
 import com.fe.jkcalendar.R;
 import com.fe.jkcalendar.base.BaseAdapter;
 import com.fe.jkcalendar.base.BaseViewHolder;
 import com.fe.jkcalendar.utils.DisplayUtils;
+import com.fe.jkcalendar.utils.StringUtils;
 import com.fe.jkcalendar.vo.DateVO;
+import com.fe.jkcalendar.vo.YMonthVO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +27,15 @@ public class CalendarAdapter extends BaseAdapter<DateVO> {
 
     private int mSelectPosition;
 
-    public CalendarAdapter(Context context) {
-        this(context, new ArrayList<DateVO>());
+    private YMonthVO mCurrentYMonthVo;
+
+    public CalendarAdapter(Context context, YMonthVO yMonthVO) {
+        super(context, yMonthVO.getDateVOList());
+        mCurrentYMonthVo = yMonthVO;
     }
 
-    public CalendarAdapter(Context context, List<DateVO> dataList) {
-        super(context, dataList);
+    public void setDay(int day) {
+        mCurrentYMonthVo.setDay(day);
     }
 
     @Override
@@ -40,6 +47,10 @@ public class CalendarAdapter extends BaseAdapter<DateVO> {
         DateVO dateVO = getItemData(mSelectPosition);
         dateVO.setSelect(false);
         return mSelectPosition;
+    }
+
+    public boolean isSelected(int position) {
+        return position == mSelectPosition;
     }
 
 
@@ -66,18 +77,30 @@ public class CalendarAdapter extends BaseAdapter<DateVO> {
 
         @Override
         protected void onBindData(DateVO dateVo, final int position) {
+            String hw = JKApplication.jkApplication.getInfo(dateVo.getCurrentDate());
             if(dateVo.getDate() == -1) {
                 llDate.setVisibility(View.INVISIBLE);
             } else {
                 llDate.setVisibility(View.VISIBLE);
                 tvDate.setText(dateVo.getDate() + "");
-                tvLunarDate.setText(dateVo.getLunarDate());
+                tvLunarDate.setText(StringUtils.isEmpty(hw) ? dateVo.getLunarDate() : hw);
             }
-            if(dateVo.isSelect()) mSelectPosition = position;
-            //颜色的改变
-            tvDate.setTextColor(dateVo.isSelect() ? Color.WHITE : mContext.getResources().getColor(R.color.color_f333333));
-            tvLunarDate.setTextColor(dateVo.isSelect() ? Color.WHITE : mContext.getResources().getColor(R.color.color_f999999));
-            rlRoot.setBackgroundColor(!dateVo.isSelect() ? Color.TRANSPARENT : mContext.getResources().getColor(R.color.colorPrimary));
+            //选中
+            if(dateVo.isSelect()) {
+                mSelectPosition = position;
+                tvDate.setTextColor(Color.WHITE);
+                tvLunarDate.setTextColor(StringUtils.isEmpty(hw) ? Color.WHITE : Color.RED);
+                rlRoot.setBackgroundColor(mContext.getResources().getColor(R.color.colorPrimary));
+            } else {
+                tvDate.setTextColor(mContext.getResources().getColor(R.color.color_f333333));
+                rlRoot.setBackgroundColor(Color.TRANSPARENT);
+                //不是休假
+                if(StringUtils.isEmpty(hw)) {
+                    tvLunarDate.setTextColor(mContext.getResources().getColor(R.color.color_f999999));
+                } else {
+                    tvLunarDate.setTextColor(Color.RED);
+                }
+            }
 
             if(rlRoot != null && mOnItemClickListener != null) {
                 rlRoot.setOnClickListener(new View.OnClickListener() {

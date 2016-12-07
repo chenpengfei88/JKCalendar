@@ -18,8 +18,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 import com.fe.jkcalendar.R;
 import com.fe.jkcalendar.adapter.home.CalendarAdapter;
+import com.fe.jkcalendar.base.BaseAdapter;
 import com.fe.jkcalendar.utils.Const;
 import com.fe.jkcalendar.vo.DateVO;
+import com.fe.jkcalendar.vo.YMonthVO;
 
 import java.util.List;
 
@@ -45,7 +47,9 @@ public class CalendarLayout extends FrameLayout {
     //滑动的距离
     private float mOffsetNum = 700;
     //底部index
-    public int mBottonIndex = 1;
+    private int mBottonIndex = 1;
+
+    private float mDownY, mUpY;
 
     //向上滑动
     private static final int SLIDE_UP = 1;
@@ -59,6 +63,7 @@ public class CalendarLayout extends FrameLayout {
     private Camera mCamera = new Camera();
     private Matrix mMatrix = new Matrix();
     private OnRotationListener mOnRotationListener;
+    private OnSelectedDateListener mOnSelectedDateListener;
 
 
     public CalendarLayout(Context context) {
@@ -77,7 +82,6 @@ public class CalendarLayout extends FrameLayout {
     public CalendarLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
-
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
@@ -113,7 +117,22 @@ public class CalendarLayout extends FrameLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return true;
+        boolean intercept = false;
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                intercept = false;
+                mDownY = ev.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                mUpY = ev.getY();
+                if(mUpY == mDownY) {
+                    intercept = false;
+                } else {
+                    intercept = true;
+                }
+                break;
+        }
+        return intercept;
     }
 
     @Override
@@ -124,6 +143,7 @@ public class CalendarLayout extends FrameLayout {
                 break;
             case MotionEvent.ACTION_MOVE:
                 float moveY = event.getY();
+                if(mInitY == 0) mInitY = moveY;
                 if(moveY == mInitY || isAnimation) break;
                 //向上滑动
                 if(moveY < mInitY || mCurrentSlide == SLIDE_UP) {
@@ -138,6 +158,7 @@ public class CalendarLayout extends FrameLayout {
                 break;
             case MotionEvent.ACTION_UP:
                 mCurrentSlide = 0;
+                mInitY = 0;
                 float offsetRotation = mRotation - mOutRotation;
                 if(offsetRotation <= 0) {
                     isLoad = false;
@@ -164,7 +185,7 @@ public class CalendarLayout extends FrameLayout {
             }
             CardView cardView = (CardView) getChildAt(mBottonIndex);
             RecyclerView recyclerView = (RecyclerView) cardView.getChildAt(0);
-            mOnRotationListener.onRotationStart(false, recyclerView);
+            mOnRotationListener.onRotationStart(!slideUp, recyclerView);
             isLoad = true;
         }
         isInit = false;
@@ -176,12 +197,23 @@ public class CalendarLayout extends FrameLayout {
         invalidate();
     }
 
-    public void addRvView(Context context, View view, CalendarAdapter calendarAdapter) {
+    public void addRvView(Context context, View view, final CalendarAdapter calendarAdapter) {
         addView(view);
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_caldenar);
-        recyclerView.setLayoutManager(new GridLayoutManager(context, Const.SPAN_COUNT));
+        recyclerView.setLayoutManager(new CustomGridLayoutManager(context, Const.SPAN_COUNT));
         recyclerView.addItemDecoration(new GridDividerItemDecoration());
         recyclerView.setAdapter(calendarAdapter);
+        calendarAdapter.setOnItemClickListener(new BaseAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                DateVO dateVO = calendarAdapter.getItemData(position);
+                if(calendarAdapter.isSelected(position) || dateVO.getDate() == -1) return;
+                int upPosition = calendarAdapter.updateSelectPositionVO();
+                dateVO.setSelect(true);
+                calendarAdapter.notifyItemsChanged(upPosition, position);
+                if(mOnSelectedDateListener != null) mOnSelectedDateListener.onSelectedDate(dateVO.getDate());
+            }
+        });
     }
 
     private void rotationAnimation(final float rotation, final float outRotation) {
@@ -209,19 +241,31 @@ public class CalendarLayout extends FrameLayout {
         });
     }
 
-    public void resetViewData(int index, List<DateVO> dateVOList) {
+    private void resetViewData(int index, List<DateVO> dateVOList) {
         CardView cardView = (CardView) getChildAt(index);
         RecyclerView recyclerView = (RecyclerView) cardView.getChildAt(0);
         CalendarAdapter calendarAdapter = (CalendarAdapter) recyclerView.getAdapter();
         calendarAdapter.resetData(dateVOList);
     }
 
+    public void resetViewData(List<DateVO> dateVOList) {
+        resetViewData(mBottonIndex, dateVOList);
+    }
+
     public void setOnRotationListener(OnRotationListener onRotationListener) {
         this.mOnRotationListener = onRotationListener;
+    }
+
+    public void setOnSelectedDateListener(OnSelectedDateListener onSelectedDateListener) {
+        mOnSelectedDateListener = onSelectedDateListener;
     }
 
     public interface OnRotationListener {
         void onRotationEnd(boolean up);
         void onRotationStart(boolean up, RecyclerView recyclerView);
+    }
+
+    public interface OnSelectedDateListener {
+        void onSelectedDate(int day);
     }
 }

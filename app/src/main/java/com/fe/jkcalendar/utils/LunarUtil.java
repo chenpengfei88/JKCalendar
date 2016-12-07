@@ -78,7 +78,7 @@ public class LunarUtil {
     // ====== 传回农历 y年闰哪个月 1-12 , 没闰传回 0
     final private static int leapMonth(int y)
     {
-        return (int) (lunarInfo[y - 1900] & 0xf);
+        return (int) (lunarInfo[y - 1900 >= lunarInfo.length ? lunarInfo.length - 1 : y - 1900] & 0xf);
     }
 
     // ====== 传回农历 y年m月的总天数

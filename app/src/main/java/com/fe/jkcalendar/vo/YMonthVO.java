@@ -2,6 +2,7 @@ package com.fe.jkcalendar.vo;
 
 import com.fe.jkcalendar.utils.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,8 +30,29 @@ public class YMonthVO {
      */
     private int month;
 
+    /**
+     *  日
+     */
+    private int day;
+
+    public YMonthVO() {
+        dateVOList = new ArrayList<>();
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
     public String getYearMonth() {
         return yearMonth;
+    }
+
+    public String getDate() {
+        return yearMonth + "-" + (day > 9 ? day : "0" + day);
     }
 
     public void setYearMonth(String yearMonth) {
@@ -63,6 +85,5 @@ public class YMonthVO {
         String[] dateArray = yearMonth.split("-");
         return dateArray[0] + "年" + dateArray[1] + "月";
     }
-
 
 }

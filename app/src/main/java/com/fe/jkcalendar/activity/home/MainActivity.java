@@ -41,10 +41,7 @@ public class MainActivity extends BaseActivity {
      */
     private YMonthVO mYMonth, mNextYMonth, mUpYMonth;
 
-    /**
-     * 日期已选择
-     */
-    private boolean isDateSelect;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,15 +61,16 @@ public class MainActivity extends BaseActivity {
         //日历layout
         mLayoutCalendar = (CalendarLayout) findViewById(R.id.layout_calendar);
 
-        initMonthData(null);
-        mLayoutCalendar.addRvView(this, View.inflate(this, R.layout.activity_gridview, null) , new CalendarAdapter(this));
-        mLayoutCalendar.addRvView(this, View.inflate(this, R.layout.activity_gridview, null), new CalendarAdapter(this, mYMonth.getDateVOList()));
+        initMonthData(null, 0);
+        mLayoutCalendar.addRvView(this, View.inflate(this, R.layout.activity_gridview, null) , new CalendarAdapter(this, new YMonthVO()));
+        mLayoutCalendar.addRvView(this, View.inflate(this, R.layout.activity_gridview, null), new CalendarAdapter(this, mYMonth));
 
         mLayoutCalendar.setOnRotationListener(new CalendarLayout.OnRotationListener() {
             @Override
             public void onRotationEnd(boolean up) {
                 mYMonth.setYearMonth(!up ? mNextYMonth.getYearMonth() : mUpYMonth.getYearMonth());
                 mYMonth.setDateVOList(!up ? mNextYMonth.getDateVOList() : mUpYMonth.getDateVOList());
+                mYMonth.setDay(!up ? mNextYMonth.getDay() : mUpYMonth.getDay());
                 setCurrentYMonth();
                 getUpNextMonthDayList();
             }
@@ -83,21 +81,33 @@ public class MainActivity extends BaseActivity {
                 cAdapter.resetData(up ? mUpYMonth.getDateVOList() : mNextYMonth.getDateVOList());
             }
         });
+
+        mLayoutCalendar.setOnSelectedDateListener(new CalendarLayout.OnSelectedDateListener() {
+            @Override
+            public void onSelectedDate(int date) {
+                mYMonth.setDay(date);
+                isDay();
+            }
+        });
     }
 
     private void setCurrentYMonth() {
         //当前日期
         mBarHelper.setTitle(mYMonth.toString());
-        if(!DateUtils.yearMonthIsCurrentMonth(mYMonth.getYearMonth())) {
+        isDay();
+    }
+
+    private void isDay() {
+        if(!DateUtils.yearMonthIsCurrentMonth(mYMonth.getDate())) {
             mBarHelper.setRightTitle(getStringContent(R.string.text_today));
         } else {
             mBarHelper.setRightTitle("");
         }
     }
 
-    private void initMonthData(String yearMonth) {
+    private void initMonthData(String yearMonth, int day) {
         //当前月份
-        mYMonth = StringUtils.isEmpty(yearMonth) ? DateUtils.getCurrentDateDayList() : DateUtils.getYearMonthDayList(yearMonth, 0, false);
+        mYMonth = StringUtils.isEmpty(yearMonth) ? DateUtils.getCurrentDateDayList() : DateUtils.getYearMonthDayList(yearMonth, day, true);
         getUpNextMonthDayList();
         setCurrentYMonth();
     }
@@ -137,20 +147,17 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onRightOneClick() {
-        initMonthData(null);
-        mLayoutCalendar.resetViewData(mLayoutCalendar.mBottonIndex, mYMonth.getDateVOList());
+        initMonthData(null, 0);
+        mLayoutCalendar.resetViewData(mYMonth.getDateVOList());
     }
 
     @Override
     protected void onRightTwoClick() {
-        isDateSelect = false;
-        CalendarUtils.showCalendar(this, mYMonth.getYear(), mYMonth.getMonth(), new CalendarUtils.OnSelectDateListener() {
+        CalendarUtils.showCalendar(this, mYMonth.getYear(), mYMonth.getMonth(), mYMonth.getDay(), new CalendarUtils.OnSelectDateListener() {
             @Override
-            public void onSelectDate(int year, int month, String yearMonth) {
-                if(!isDateSelect) {
-                    isDateSelect = true;
-                    initMonthData(yearMonth);
-                }
+            public void onSelectDate(int year, int month, int day, String yearMonth) {
+                initMonthData(yearMonth, day);
+                mLayoutCalendar.resetViewData(mYMonth.getDateVOList());
             }
         });
     }

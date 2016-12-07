@@ -103,9 +103,9 @@ public class DateUtils {
      * @return
      */
     public static YMonthVO getYearMonthDayList(String yearMonthStr, int currentDay, boolean isInit) {
-        System.out.println("========yearMonthStr===========" + yearMonthStr + "==========" + currentDay);
         YMonthVO yMonthVO = new YMonthVO();
         yMonthVO.setYearMonth(yearMonthStr);
+        yMonthVO.setDay(isInit ? currentDay : 1);
 
         List<DateVO> dateVoList = new ArrayList<>();
         Date yearMonthDate = getDate(yearMonthStr, DATE_PATTERN_FOUR);
@@ -181,7 +181,7 @@ public class DateUtils {
      * @return
      */
     public static boolean yearMonthIsCurrentMonth(String yearMonth) {
-        return StringUtils.isEquals(yearMonth, getCurrentDateStr(DATE_PATTERN_FOUR));
+        return StringUtils.isEquals(yearMonth, getCurrentDateStr(DATE_PATTERN_TWO));
     }
 
 
