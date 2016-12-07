@@ -248,6 +248,7 @@ public class SpinnerView extends View {
 
         mSelectedTextPaint = new Paint();
         initPaintStyle(mSelectedTextPaint);
+        mSelectedTextPaint.setStyle(Paint.Style.STROKE);
 
         mSelectedLinePaint = new Paint();
         initPaintStyle(mSelectedLinePaint);

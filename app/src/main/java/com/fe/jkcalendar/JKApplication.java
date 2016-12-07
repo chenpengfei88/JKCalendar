@@ -55,5 +55,10 @@ public class JKApplication extends Application {
         for(int i = 0; i <= 8; i++) {
             HolidayMap.put("2017-10-0" + i, HOLIDAY);
         }
+
+        HolidayMap.put("2016-" + 12 + "-16", "发工资");
+        for(int i = 0; i <= 12; i++) {
+            HolidayMap.put("2017-" + (i > 9 ? i : "0" + i) + "-16", "发工资");
+        }
     }
 }

@@ -89,7 +89,7 @@ public class CalendarAdapter extends BaseAdapter<DateVO> {
             if(dateVo.isSelect()) {
                 mSelectPosition = position;
                 tvDate.setTextColor(Color.WHITE);
-                tvLunarDate.setTextColor(StringUtils.isEmpty(hw) ? Color.WHITE : Color.RED);
+                tvLunarDate.setTextColor(Color.WHITE);
                 rlRoot.setBackgroundColor(mContext.getResources().getColor(R.color.colorPrimary));
             } else {
                 tvDate.setTextColor(mContext.getResources().getColor(R.color.color_f333333));
@@ -98,7 +98,7 @@ public class CalendarAdapter extends BaseAdapter<DateVO> {
                 if(StringUtils.isEmpty(hw)) {
                     tvLunarDate.setTextColor(mContext.getResources().getColor(R.color.color_f999999));
                 } else {
-                    tvLunarDate.setTextColor(Color.RED);
+                    tvLunarDate.setTextColor(mContext.getResources().getColor(R.color.colorPrimary));
                 }
             }
 
