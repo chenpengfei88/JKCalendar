@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.FrameLayout;
 import com.fe.jkcalendar.R;
 import com.fe.jkcalendar.adapter.home.CalendarAdapter;
@@ -49,7 +50,9 @@ public class CalendarLayout extends FrameLayout {
     //底部index
     private int mBottonIndex = 1;
 
-    private float mDownY, mUpY;
+    private float mDownY, mDownX;
+    // 检测到手机的最小滑动值
+    private int mTouchSlop;
 
     //向上滑动
     private static final int SLIDE_UP = 1;
@@ -72,6 +75,7 @@ public class CalendarLayout extends FrameLayout {
 
     public CalendarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
     public CalendarLayout(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -122,14 +126,29 @@ public class CalendarLayout extends FrameLayout {
             case MotionEvent.ACTION_DOWN:
                 intercept = false;
                 mDownY = ev.getY();
+                mDownX = ev.getX();
                 break;
             case MotionEvent.ACTION_MOVE:
-                mUpY = ev.getY();
-                if(mUpY == mDownY) {
+                final float y = ev.getY();
+                final float yDiff = Math.abs(y - mDownY);
+                final float x = ev.getX();
+                final float xDiff = Math.abs(x - mDownX);
+                //如果是X轴事件就不拦截
+                if (xDiff > mTouchSlop && xDiff * 0.5f > yDiff) {
                     intercept = false;
                 } else {
-                    intercept = true;
+                    if (yDiff > mTouchSlop) {
+                        intercept = true;
+                    } else {
+                        intercept = false;
+                    }
                 }
+//
+//                if(mUpY == mDownY) {
+//                    intercept = false;
+//                } else {
+//                    intercept = true;
+//                }
                 break;
         }
         return intercept;
