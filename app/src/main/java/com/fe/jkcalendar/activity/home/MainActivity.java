@@ -7,8 +7,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.fe.jkcalendar.R;
 import com.fe.jkcalendar.adapter.home.CalendarAdapter;
 import com.fe.jkcalendar.base.BaseActivity;

@@ -143,12 +143,6 @@ public class CalendarLayout extends FrameLayout {
                         intercept = false;
                     }
                 }
-//
-//                if(mUpY == mDownY) {
-//                    intercept = false;
-//                } else {
-//                    intercept = true;
-//                }
                 break;
         }
         return intercept;
@@ -175,6 +169,7 @@ public class CalendarLayout extends FrameLayout {
                     }
                 }
                 break;
+            case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 mCurrentSlide = 0;
                 mInitY = 0;
@@ -185,7 +180,12 @@ public class CalendarLayout extends FrameLayout {
                     resetViewData(mBottonIndex == 0 ? 1 : 0, null);
                 } else {
                     isAnimation = true;
-                    rotationAnimation(offsetRotation, mOutRotation);
+                    boolean isReduction = false;
+                    if(mOutRotation < 28) {
+                        isReduction = true;
+                        offsetRotation = -mOutRotation;
+                    }
+                    rotationAnimation(offsetRotation, mOutRotation, isReduction);
                 }
                 break;
         }
@@ -235,9 +235,9 @@ public class CalendarLayout extends FrameLayout {
         });
     }
 
-    private void rotationAnimation(final float rotation, final float outRotation) {
+    private void rotationAnimation(final float rotation, final float outRotation, final boolean isReduction) {
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
-        valueAnimator.setDuration((long) (rotation * 8));
+        valueAnimator.setDuration((long) (Math.abs(rotation) * 7));
         valueAnimator.start();
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -252,10 +252,12 @@ public class CalendarLayout extends FrameLayout {
         valueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mOnRotationListener.onRotationEnd(isUpMonth);
-                isLoad = false;
+                if(!isReduction) {
+                    mOnRotationListener.onRotationEnd(isUpMonth);
+                    resetViewData(mBottonIndex == 0 ? 1 : 0, null);
+                    isLoad = false;
+                }
                 isAnimation = false;
-                resetViewData(mBottonIndex == 0 ? 1 : 0, null);
             }
         });
     }
@@ -268,7 +270,7 @@ public class CalendarLayout extends FrameLayout {
     }
 
     public void resetViewData(List<DateVO> dateVOList) {
-        resetViewData(mBottonIndex, dateVOList);
+        resetViewData(!isLoad ? mBottonIndex : mBottonIndex == 0 ? 1 : 0, dateVOList);
     }
 
     public void setOnRotationListener(OnRotationListener onRotationListener) {

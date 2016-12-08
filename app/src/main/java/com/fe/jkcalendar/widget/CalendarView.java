@@ -119,8 +119,8 @@ public class CalendarView extends LinearLayout {
         tvSure.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         tvSure.setGravity(Gravity.CENTER_HORIZONTAL);
         tvSure.setTextSize(16);
-        tvSure.setPadding(0, 25, 0, 25);
-        tvSure.setText("确定");
+        tvSure.setPadding(0, 30, 0, 30);
+        tvSure.setText("完成");
         addView(tvSure);
         tvSure.setOnClickListener(new OnClickListener() {
             @Override

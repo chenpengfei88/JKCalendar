@@ -102,7 +102,7 @@ public class SpinnerView extends View {
     /**
      *  padding top bottom
      */
-    private int mPaddingTopBottom = 36;
+    private int mPaddingTopBottom = 33;
 
     /**
      *  padding left right
@@ -430,7 +430,7 @@ public class SpinnerView extends View {
                 mMoveY = mMoveY + offsetY;
                 if(mIsReset) {
                     mIsReset = false;
-                    mInitY = mMoveY;
+                    mInitY = mMoveY - 0.3f;
                 }
                 mUpScrollY = currY;
                 calculationOffset();
